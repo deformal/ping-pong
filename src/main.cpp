@@ -44,19 +44,6 @@ int main(int argc, char **args)
         return 1;
     }
 
-    // windowSurface = SDL_GetWindowSurface(window);
-
-    // if (windowSurface == NULL || !windowSurface)
-    // {
-    //     cout << "Window surface could not be created! SDL_Error: " << SDL_GetError() << endl;
-    //     SDL_Delay(2000);
-    //     return 1;
-    // }
-
-    // SDL_FillRect(windowSurface, NULL, SDL_MapRGB(windowSurface->format, 123, 255, 255));
-
-    // SDL_UpdateWindowSurface(window);
-
     bool running = true;
 
     SDL_Event event;
@@ -86,15 +73,15 @@ int main(int argc, char **args)
         if (keystate[SDL_SCANCODE_W] && leftPaddlePosition.y > 0)
         {
             leftPaddlePosition.y -= leftPaddlePosition.speed;
-            // cout << "[DEBUG]:  " << "left pad speed: " << leftPaddlePosition.speed << endl;
-            // cout << "[DEBUG]:  " << "left pad y position: " << leftPaddlePosition.y << endl;
+            cout << "[DEBUG]:  " << "left pad speed: " << leftPaddlePosition.speed << endl;
+            cout << "[DEBUG]:  " << "left pad y position: " << leftPaddlePosition.y << endl;
         }
 
         if (keystate[SDL_SCANCODE_S] && leftPaddlePosition.y + leftPaddlePosition.h < 720)
         {
             leftPaddlePosition.y += leftPaddlePosition.speed;
-            // cout << "[DEBUG]:  " << "left pad speed: " << leftPaddlePosition.speed << endl;
-            // cout << "[DEBUG]:  " << "left pad y position: " << leftPaddlePosition.y << endl;
+            cout << "[DEBUG]:  " << "left pad speed: " << leftPaddlePosition.speed << endl;
+            cout << "[DEBUG]:  " << "left pad y position: " << leftPaddlePosition.y << endl;
         }
 
         if (keystate[SDL_SCANCODE_UP] && rightPaddlePosition.y > 0)
@@ -162,49 +149,6 @@ int main(int argc, char **args)
         SDL_SetRenderDrawColor(ren, 100, 100, 100, 255);
         for (int i = 0; i < 720; i += 20)
             SDL_RenderDrawLine(ren, 640, i, 640, i + 10);
-
-        // SDL_SetRenderDrawColor(ren, 80, 200, 220, 255);
-        // SDL_RenderDrawLine(ren, 10, 200, 10, 400);
-
-        // int farRightMarging, farRightMarginTop;
-        // SDL_GetWindowSize(window, &farRightMarging, &farRightMarginTop);
-        // farRightMarging = farRightMarging - 10;
-
-        // SDL_SetRenderDrawColor(ren, 100, 200, 100, 255);
-        // SDL_RenderDrawLine(ren, farRightMarging, 200, farRightMarging, 400);
-
-        // if (event.type == SDL_KEYDOWN)
-        // {
-        //     switch (event.key.keysym.scancode)
-        //     {
-        //     case SDL_SCANCODE_UP:
-        //         cout << "UP arrow key pressed" << endl;
-        //         break;
-        //     case SDL_SCANCODE_DOWN:
-        //         cout << "DOWN arrow key pressed" << endl;
-        //         break;
-        //     case SDL_SCANCODE_LEFT:
-        //         cout << "LEFT arrow key pressed" << endl;
-        //         break;
-        //     case SDL_SCANCODE_RIGHT:
-        //         cout << "RIGHT arrow key pressed" << endl;
-        //         break;
-        //     case SDL_SCANCODE_W:
-        //         cout << "W key pressed" << endl;
-        //         break;
-        //     case SDL_SCANCODE_S:
-        //         cout << "S key pressed" << endl;
-        //         break;
-        //     case SDL_SCANCODE_A:
-        //         cout << "A key pressed" << endl;
-        //         break;
-        //     case SDL_SCANCODE_D:
-        //         cout << "D key pressed" << endl;
-        //         break;
-        //     default:
-        //         break;
-        //     }
-        // }
 
         SDL_RenderPresent(ren);
 
