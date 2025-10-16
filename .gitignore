@@ -51,4 +51,6 @@ CMakePresets.json
 CMakeScripts/
 Testing/
 
+Makefile
+
 # End of the list
