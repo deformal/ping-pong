@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug PingPongEngine (lldb)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/PingPongEngine",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb",
+            "preLaunchTask": "CMake: build"
+        },
+    ]
+}
