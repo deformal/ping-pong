@@ -55,5 +55,5 @@ Makefile
 
 SDL2
 out
-
+.vs
 # End of the list
