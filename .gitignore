@@ -53,4 +53,7 @@ Testing/
 
 Makefile
 
+SDL2
+out
+
 # End of the list

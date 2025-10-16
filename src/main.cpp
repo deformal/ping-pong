@@ -23,6 +23,7 @@ int main(int argc, char **args)
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
     {
         cout << "SDL could not initialize! SDL_Error: " << SDL_GetError() << endl;
+        cout << "Press any key to continue..." << endl;
         SDL_Delay(2000);
         return 1;
     }
