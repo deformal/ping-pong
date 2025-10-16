@@ -1,4 +1,0 @@
-/Users/saurabhjainwal/Desktop/game-dev/ping-pong/CMakeFiles/PingPongEngine.dir
-/Users/saurabhjainwal/Desktop/game-dev/ping-pong/CMakeFiles/run.dir
-/Users/saurabhjainwal/Desktop/game-dev/ping-pong/CMakeFiles/edit_cache.dir
-/Users/saurabhjainwal/Desktop/game-dev/ping-pong/CMakeFiles/rebuild_cache.dir
