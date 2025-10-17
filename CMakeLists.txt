@@ -346,6 +346,12 @@ elseif(APPLE)
     endif()
 endif()
 
+message("Unzipping fonts")
+execute_process(
+    COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_CURRENT_SOURCE_DIR}/assets/arcadeclassic.zip
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/assets 
+)
+
 add_custom_target(run
     COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/PingPongEngine
     DEPENDS PingPongEngine

@@ -98,7 +98,7 @@ int main(int argc, char **args)
 		return 1;
 	}
 
-	const char *fontPath = "../assets/bytebounce/ByteBounce.ttf";
+	const char *fontPath = "../assets/ARCADECLASSIC.TTF";
 	TTF_Font *font = TTF_OpenFont(fontPath, 28);
 
 	if (!font)
