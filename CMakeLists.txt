@@ -5,12 +5,11 @@ project(PingPongEngine)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Option to enable automatic SDL2 installation
 option(AUTO_INSTALL_SDL2 "Automatically install SDL2 if not found" ON)
 option(AUTO_INSTALL_SDL2_TTF "Automatically install SDL2_ttf if not found" ON)
 
-# Function to install SDL2 on different platforms
 function(install_sdl2)
     message(STATUS "SDL2 not found. Attempting automatic installation...")
     
@@ -41,74 +40,68 @@ function(install_sdl2)
         message(STATUS "SDL2 installed to ${SDL2_EXTRACT_DIR}")
         
     elseif(APPLE)
-        message(STATUS "Installing SDL2 via Homebrew...")
-        find_program(BREW brew)
+        message(STATUS "Downloading SDL2 framework for macOS...")
+        set(SDL2_VERSION "2.28.5")
+        set(SDL2_URL "https://github.com/libsdl-org/SDL/releases/download/release-${SDL2_VERSION}/SDL2-${SDL2_VERSION}.dmg")
+        set(SDL2_DMG "${CMAKE_BINARY_DIR}/SDL2.dmg")
+        set(SDL2_EXTRACT_DIR "${CMAKE_SOURCE_DIR}/SDL2")
         
-        if(NOT BREW)
-            message(FATAL_ERROR "Homebrew not found. Please install Homebrew from https://brew.sh")
+        file(DOWNLOAD ${SDL2_URL} ${SDL2_DMG}
+            SHOW_PROGRESS
+            STATUS DOWNLOAD_STATUS
+        )
+        
+        list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
+        if(NOT STATUS_CODE EQUAL 0)
+            message(FATAL_ERROR "Failed to download SDL2")
         endif()
         
         execute_process(
-            COMMAND ${BREW} install sdl2
-            RESULT_VARIABLE BREW_RESULT
-            OUTPUT_VARIABLE BREW_OUTPUT
-            ERROR_VARIABLE BREW_ERROR
+            COMMAND hdiutil attach ${SDL2_DMG} -mountpoint ${CMAKE_BINARY_DIR}/SDL2_mount
+            RESULT_VARIABLE MOUNT_RESULT
+            OUTPUT_VARIABLE MOUNT_OUTPUT
+            ERROR_VARIABLE MOUNT_ERROR
         )
         
-        if(NOT BREW_RESULT EQUAL 0)
-            message(FATAL_ERROR "Failed to install SDL2 via Homebrew: ${BREW_ERROR}")
+        message(STATUS "Mount result: ${MOUNT_RESULT}")
+        message(STATUS "Mount output: ${MOUNT_OUTPUT}")
+        message(STATUS "Mount error: ${MOUNT_ERROR}")
+        
+        if(NOT MOUNT_RESULT EQUAL 0)
+            message(FATAL_ERROR "Failed to mount SDL2 DMG: ${MOUNT_ERROR}")
         endif()
         
-        message(STATUS "SDL2 installed successfully via Homebrew")
+        file(MAKE_DIRECTORY ${SDL2_EXTRACT_DIR})
+        execute_process(
+            COMMAND cp -R ${CMAKE_BINARY_DIR}/SDL2_mount/SDL2.framework ${SDL2_EXTRACT_DIR}/
+            RESULT_VARIABLE COPY_RESULT
+            OUTPUT_VARIABLE COPY_OUTPUT
+            ERROR_VARIABLE COPY_ERROR
+        )
         
-    else()
-        # Linux
-        message(STATUS "Attempting to install SDL2 on Linux...")
+        message(STATUS "Copy result: ${COPY_RESULT}")
+        message(STATUS "Copy output: ${COPY_OUTPUT}")
+        message(STATUS "Copy error: ${COPY_ERROR}")
         
-        # Detect package manager
-        find_program(APT apt-get)
-        find_program(DNF dnf)
-        find_program(PACMAN pacman)
-        find_program(ZYPPER zypper)
+        execute_process(
+            COMMAND hdiutil detach ${CMAKE_BINARY_DIR}/SDL2_mount
+            OUTPUT_VARIABLE DETACH_OUTPUT
+            ERROR_VARIABLE DETACH_ERROR
+        )
         
-        if(APT)
-            message(STATUS "Using apt-get to install SDL2...")
-            execute_process(
-                COMMAND sudo apt-get update
-                COMMAND sudo apt-get install -y libsdl2-dev
-                RESULT_VARIABLE INSTALL_RESULT
-            )
-        elseif(DNF)
-            message(STATUS "Using dnf to install SDL2...")
-            execute_process(
-                COMMAND sudo dnf install -y SDL2-devel
-                RESULT_VARIABLE INSTALL_RESULT
-            )
-        elseif(PACMAN)
-            message(STATUS "Using pacman to install SDL2...")
-            execute_process(
-                COMMAND sudo pacman -S --noconfirm sdl2
-                RESULT_VARIABLE INSTALL_RESULT
-            )
-        elseif(ZYPPER)
-            message(STATUS "Using zypper to install SDL2...")
-            execute_process(
-                COMMAND sudo zypper install -y libSDL2-devel
-                RESULT_VARIABLE INSTALL_RESULT
-            )
-        else()
-            message(FATAL_ERROR "No supported package manager found. Please install SDL2 manually.")
+        message(STATUS "Detach output: ${DETACH_OUTPUT}")
+        
+        file(REMOVE ${SDL2_DMG})
+        
+        if(NOT COPY_RESULT EQUAL 0)
+            message(FATAL_ERROR "Failed to copy SDL2 framework")
         endif()
         
-        if(NOT INSTALL_RESULT EQUAL 0)
-            message(FATAL_ERROR "Failed to install SDL2")
-        endif()
-        
-        message(STATUS "SDL2 installed successfully")
+        set(SDL2_DIR ${SDL2_EXTRACT_DIR} PARENT_SCOPE)
+        message(STATUS "SDL2 framework installed to ${SDL2_EXTRACT_DIR}/SDL2.framework")
     endif()
 endfunction()
 
-# Function to install SDL2_ttf on different platforms
 function(install_sdl2_ttf)
     message(STATUS "SDL2_ttf not found. Attempting automatic installation...")
     
@@ -139,81 +132,76 @@ function(install_sdl2_ttf)
         message(STATUS "SDL2_ttf installed to ${SDL2_TTF_EXTRACT_DIR}")
         
     elseif(APPLE)
-        message(STATUS "Installing SDL2_ttf via Homebrew...")
-        find_program(BREW brew)
+        message(STATUS "Downloading SDL2_ttf framework for macOS...")
+        set(SDL2_TTF_VERSION "2.22.0")
+        set(SDL2_TTF_URL "https://github.com/libsdl-org/SDL_ttf/releases/download/release-${SDL2_TTF_VERSION}/SDL2_ttf-${SDL2_TTF_VERSION}.dmg")
+        set(SDL2_TTF_DMG "${CMAKE_BINARY_DIR}/SDL2_ttf.dmg")
+        set(SDL2_TTF_EXTRACT_DIR "${CMAKE_SOURCE_DIR}/SDL2_ttf")
         
-        if(NOT BREW)
-            message(FATAL_ERROR "Homebrew not found. Please install Homebrew from https://brew.sh")
+        file(DOWNLOAD ${SDL2_TTF_URL} ${SDL2_TTF_DMG}
+            SHOW_PROGRESS
+            STATUS DOWNLOAD_STATUS
+        )
+        
+        list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
+        if(NOT STATUS_CODE EQUAL 0)
+            message(FATAL_ERROR "Failed to download SDL2_ttf")
         endif()
         
         execute_process(
-            COMMAND ${BREW} install sdl2_ttf
-            RESULT_VARIABLE BREW_RESULT
-            OUTPUT_VARIABLE BREW_OUTPUT
-            ERROR_VARIABLE BREW_ERROR
+            COMMAND hdiutil attach ${SDL2_TTF_DMG} -mountpoint ${CMAKE_BINARY_DIR}/SDL2_ttf_mount
+            RESULT_VARIABLE MOUNT_RESULT
+            OUTPUT_VARIABLE MOUNT_OUTPUT
+            ERROR_VARIABLE MOUNT_ERROR
         )
         
-        if(NOT BREW_RESULT EQUAL 0)
-            message(FATAL_ERROR "Failed to install SDL2_ttf via Homebrew: ${BREW_ERROR}")
+        message(STATUS "Mount result: ${MOUNT_RESULT}")
+        message(STATUS "Mount output: ${MOUNT_OUTPUT}")
+        message(STATUS "Mount error: ${MOUNT_ERROR}")
+        
+        if(NOT MOUNT_RESULT EQUAL 0)
+            message(FATAL_ERROR "Failed to mount SDL2_ttf DMG: ${MOUNT_ERROR}")
         endif()
         
-        message(STATUS "SDL2_ttf installed successfully via Homebrew")
+        file(MAKE_DIRECTORY ${SDL2_TTF_EXTRACT_DIR})
+        execute_process(
+            COMMAND cp -R ${CMAKE_BINARY_DIR}/SDL2_ttf_mount/SDL2_ttf.framework ${SDL2_TTF_EXTRACT_DIR}/
+            RESULT_VARIABLE COPY_RESULT
+            OUTPUT_VARIABLE COPY_OUTPUT
+            ERROR_VARIABLE COPY_ERROR
+        )
         
-    else()
-        # Linux
-        message(STATUS "Attempting to install SDL2_ttf on Linux...")
+        message(STATUS "Copy result: ${COPY_RESULT}")
+        message(STATUS "Copy output: ${COPY_OUTPUT}")
+        message(STATUS "Copy error: ${COPY_ERROR}")
         
-        # Detect package manager
-        find_program(APT apt-get)
-        find_program(DNF dnf)
-        find_program(PACMAN pacman)
-        find_program(ZYPPER zypper)
+        execute_process(
+            COMMAND hdiutil detach ${CMAKE_BINARY_DIR}/SDL2_ttf_mount
+            OUTPUT_VARIABLE DETACH_OUTPUT
+            ERROR_VARIABLE DETACH_ERROR
+        )
         
-        if(APT)
-            message(STATUS "Using apt-get to install SDL2_ttf...")
-            execute_process(
-                COMMAND sudo apt-get update
-                COMMAND sudo apt-get install -y libsdl2-ttf-dev
-                RESULT_VARIABLE INSTALL_RESULT
-            )
-        elseif(DNF)
-            message(STATUS "Using dnf to install SDL2_ttf...")
-            execute_process(
-                COMMAND sudo dnf install -y SDL2_ttf-devel
-                RESULT_VARIABLE INSTALL_RESULT
-            )
-        elseif(PACMAN)
-            message(STATUS "Using pacman to install SDL2_ttf...")
-            execute_process(
-                COMMAND sudo pacman -S --noconfirm sdl2_ttf
-                RESULT_VARIABLE INSTALL_RESULT
-            )
-        elseif(ZYPPER)
-            message(STATUS "Using zypper to install SDL2_ttf...")
-            execute_process(
-                COMMAND sudo zypper install -y libSDL2_ttf-devel
-                RESULT_VARIABLE INSTALL_RESULT
-            )
-        else()
-            message(FATAL_ERROR "No supported package manager found. Please install SDL2_ttf manually.")
+        message(STATUS "Detach output: ${DETACH_OUTPUT}")
+        
+        file(REMOVE ${SDL2_TTF_DMG})
+        
+        if(NOT COPY_RESULT EQUAL 0)
+            message(FATAL_ERROR "Failed to copy SDL2_ttf framework")
         endif()
         
-        if(NOT INSTALL_RESULT EQUAL 0)
-            message(FATAL_ERROR "Failed to install SDL2_ttf")
-        endif()
-        
-        message(STATUS "SDL2_ttf installed successfully")
+        set(SDL2_TTF_DIR ${SDL2_TTF_EXTRACT_DIR} PARENT_SCOPE)
+        message(STATUS "SDL2_ttf framework installed to ${SDL2_TTF_EXTRACT_DIR}/SDL2_ttf.framework")
     endif()
 endfunction()
 
-# Platform-specific SDL2 configuration
+set(SDL2_DIR "${CMAKE_SOURCE_DIR}/SDL2" CACHE PATH "Path to SDL2 directory")
+
 if(WIN32)
-    set(SDL2_DIR "${CMAKE_SOURCE_DIR}/SDL2" CACHE PATH "Path to SDL2 directory")
-    
     find_path(SDL2_INCLUDE_DIR SDL.h
         HINTS 
         ${SDL2_DIR}/include
         $ENV{SDL2_DIR}/include
+        NO_DEFAULT_PATH
     )
     
     find_library(SDL2_LIBRARY 
@@ -223,6 +211,7 @@ if(WIN32)
         ${SDL2_DIR}/lib
         $ENV{SDL2_DIR}/lib/x64
         $ENV{SDL2_DIR}/lib
+        NO_DEFAULT_PATH
     )
     
     find_library(SDL2MAIN_LIBRARY 
@@ -232,62 +221,35 @@ if(WIN32)
         ${SDL2_DIR}/lib
         $ENV{SDL2_DIR}/lib/x64
         $ENV{SDL2_DIR}/lib
+        NO_DEFAULT_PATH
     )
     
 elseif(APPLE)
-    find_path(SDL2_INCLUDE_DIR SDL.h
-        HINTS 
-        /opt/homebrew/include/SDL2
-        /usr/local/include/SDL2
-    )
-    
-    find_library(SDL2_LIBRARY SDL2
-        HINTS 
-        /opt/homebrew/lib
-        /usr/local/lib
-    )
-    
-else()
-    # Linux: Use pkg-config
-    find_package(PkgConfig)
-    if(PkgConfig_FOUND)
-        pkg_check_modules(SDL2 sdl2)
-    endif()
-    
-    if(SDL2_FOUND)
-        set(SDL2_INCLUDE_DIR ${SDL2_INCLUDE_DIRS})
-        set(SDL2_LIBRARY ${SDL2_LIBRARIES})
+    if(EXISTS "${SDL2_DIR}/SDL2.framework")
+        set(SDL2_FRAMEWORK "${SDL2_DIR}/SDL2.framework")
+        set(SDL2_INCLUDE_DIR "${SDL2_FRAMEWORK}/Headers")
+        set(SDL2_LIBRARY "${SDL2_FRAMEWORK}")
+        message(STATUS "Found local SDL2 framework at ${SDL2_FRAMEWORK}")
     else()
-        find_path(SDL2_INCLUDE_DIR SDL.h
-            HINTS /usr/include/SDL2 /usr/local/include/SDL2
-        )
-        find_library(SDL2_LIBRARY SDL2
-            HINTS /usr/lib /usr/local/lib
-        )
+        set(SDL2_INCLUDE_DIR "")
+        set(SDL2_LIBRARY "")
     endif()
 endif()
 
-# If SDL2 not found and auto-install is enabled, install it
 if((NOT SDL2_INCLUDE_DIR OR NOT SDL2_LIBRARY) AND AUTO_INSTALL_SDL2)
     install_sdl2()
     
-    # Re-search for SDL2 after installation
     if(WIN32)
-        find_path(SDL2_INCLUDE_DIR SDL.h HINTS ${SDL2_DIR}/include)
-        find_library(SDL2_LIBRARY SDL2 HINTS ${SDL2_DIR}/lib/x64 ${SDL2_DIR}/lib)
-        find_library(SDL2MAIN_LIBRARY SDL2main HINTS ${SDL2_DIR}/lib/x64 ${SDL2_DIR}/lib)
+        find_path(SDL2_INCLUDE_DIR SDL.h HINTS ${SDL2_DIR}/include NO_DEFAULT_PATH)
+        find_library(SDL2_LIBRARY SDL2 HINTS ${SDL2_DIR}/lib/x64 ${SDL2_DIR}/lib NO_DEFAULT_PATH)
+        find_library(SDL2MAIN_LIBRARY SDL2main HINTS ${SDL2_DIR}/lib/x64 ${SDL2_DIR}/lib NO_DEFAULT_PATH)
     elseif(APPLE)
-        find_path(SDL2_INCLUDE_DIR SDL.h HINTS /opt/homebrew/include/SDL2 /usr/local/include/SDL2)
-        find_library(SDL2_LIBRARY SDL2 HINTS /opt/homebrew/lib /usr/local/lib)
-    else()
-        find_package(PkgConfig REQUIRED)
-        pkg_check_modules(SDL2 REQUIRED sdl2)
-        set(SDL2_INCLUDE_DIR ${SDL2_INCLUDE_DIRS})
-        set(SDL2_LIBRARY ${SDL2_LIBRARIES})
+        set(SDL2_FRAMEWORK "${SDL2_DIR}/SDL2.framework")
+        set(SDL2_INCLUDE_DIR "${SDL2_FRAMEWORK}/Headers")
+        set(SDL2_LIBRARY "${SDL2_FRAMEWORK}")
     endif()
 endif()
 
-# Final verification for SDL2
 if(NOT SDL2_INCLUDE_DIR OR NOT SDL2_LIBRARY)
     message(FATAL_ERROR "SDL2 still not found after installation attempt. Please install SDL2 manually.")
 endif()
@@ -295,14 +257,14 @@ endif()
 message(STATUS "SDL2 Include: ${SDL2_INCLUDE_DIR}")
 message(STATUS "SDL2 Library: ${SDL2_LIBRARY}")
 
-# Platform-specific SDL2_ttf configuration
+set(SDL2_TTF_DIR "${CMAKE_SOURCE_DIR}/SDL2_ttf" CACHE PATH "Path to SDL2_ttf directory")
+
 if(WIN32)
-    set(SDL2_TTF_DIR "${CMAKE_SOURCE_DIR}/SDL2_ttf" CACHE PATH "Path to SDL2_ttf directory")
-    
     find_path(SDL2_TTF_INCLUDE_DIR SDL_ttf.h
         HINTS 
         ${SDL2_TTF_DIR}/include
         $ENV{SDL2_TTF_DIR}/include
+        NO_DEFAULT_PATH
     )
     
     find_library(SDL2_TTF_LIBRARY 
@@ -312,61 +274,34 @@ if(WIN32)
         ${SDL2_TTF_DIR}/lib
         $ENV{SDL2_TTF_DIR}/lib/x64
         $ENV{SDL2_TTF_DIR}/lib
+        NO_DEFAULT_PATH
     )
     
 elseif(APPLE)
-    find_path(SDL2_TTF_INCLUDE_DIR SDL_ttf.h
-        HINTS 
-        /opt/homebrew/include/SDL2
-        /usr/local/include/SDL2
-    )
-    
-    find_library(SDL2_TTF_LIBRARY SDL2_ttf
-        HINTS 
-        /opt/homebrew/lib
-        /usr/local/lib
-    )
-    
-else()
-    # Linux: Use pkg-config
-    find_package(PkgConfig)
-    if(PkgConfig_FOUND)
-        pkg_check_modules(SDL2_TTF SDL2_ttf)
-    endif()
-    
-    if(SDL2_TTF_FOUND)
-        set(SDL2_TTF_INCLUDE_DIR ${SDL2_TTF_INCLUDE_DIRS})
-        set(SDL2_TTF_LIBRARY ${SDL2_TTF_LIBRARIES})
+    if(EXISTS "${SDL2_TTF_DIR}/SDL2_ttf.framework")
+        set(SDL2_TTF_FRAMEWORK "${SDL2_TTF_DIR}/SDL2_ttf.framework")
+        set(SDL2_TTF_INCLUDE_DIR "${SDL2_TTF_FRAMEWORK}/Headers")
+        set(SDL2_TTF_LIBRARY "${SDL2_TTF_FRAMEWORK}")
+        message(STATUS "Found local SDL2_ttf framework at ${SDL2_TTF_FRAMEWORK}")
     else()
-        find_path(SDL2_TTF_INCLUDE_DIR SDL_ttf.h
-            HINTS /usr/include/SDL2 /usr/local/include/SDL2
-        )
-        find_library(SDL2_TTF_LIBRARY SDL2_ttf
-            HINTS /usr/lib /usr/local/lib
-        )
+        set(SDL2_TTF_INCLUDE_DIR "")
+        set(SDL2_TTF_LIBRARY "")
     endif()
 endif()
 
-# If SDL2_ttf not found and auto-install is enabled, install it
 if((NOT SDL2_TTF_INCLUDE_DIR OR NOT SDL2_TTF_LIBRARY) AND AUTO_INSTALL_SDL2_TTF)
     install_sdl2_ttf()
     
-    # Re-search for SDL2_ttf after installation
     if(WIN32)
-        find_path(SDL2_TTF_INCLUDE_DIR SDL_ttf.h HINTS ${SDL2_TTF_DIR}/include)
-        find_library(SDL2_TTF_LIBRARY SDL2_ttf HINTS ${SDL2_TTF_DIR}/lib/x64 ${SDL2_TTF_DIR}/lib)
+        find_path(SDL2_TTF_INCLUDE_DIR SDL_ttf.h HINTS ${SDL2_TTF_DIR}/include NO_DEFAULT_PATH)
+        find_library(SDL2_TTF_LIBRARY SDL2_ttf HINTS ${SDL2_TTF_DIR}/lib/x64 ${SDL2_TTF_DIR}/lib NO_DEFAULT_PATH)
     elseif(APPLE)
-        find_path(SDL2_TTF_INCLUDE_DIR SDL_ttf.h HINTS /opt/homebrew/include/SDL2 /usr/local/include/SDL2)
-        find_library(SDL2_TTF_LIBRARY SDL2_ttf HINTS /opt/homebrew/lib /usr/local/lib)
-    else()
-        find_package(PkgConfig REQUIRED)
-        pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
-        set(SDL2_TTF_INCLUDE_DIR ${SDL2_TTF_INCLUDE_DIRS})
-        set(SDL2_TTF_LIBRARY ${SDL2_TTF_LIBRARIES})
+        set(SDL2_TTF_FRAMEWORK "${SDL2_TTF_DIR}/SDL2_ttf.framework")
+        set(SDL2_TTF_INCLUDE_DIR "${SDL2_TTF_FRAMEWORK}/Headers")
+        set(SDL2_TTF_LIBRARY "${SDL2_TTF_FRAMEWORK}")
     endif()
 endif()
 
-# Final verification for SDL2_ttf
 if(NOT SDL2_TTF_INCLUDE_DIR OR NOT SDL2_TTF_LIBRARY)
     message(FATAL_ERROR "SDL2_ttf still not found after installation attempt. Please install SDL2_ttf manually.")
 endif()
@@ -376,20 +311,15 @@ message(STATUS "SDL2_ttf Library: ${SDL2_TTF_LIBRARY}")
 
 include_directories(${SDL2_INCLUDE_DIR} ${SDL2_TTF_INCLUDE_DIR})
 
-# Source files
 file(GLOB SOURCES "src/*.cpp")
 
-# Output directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# Create executable
 add_executable(PingPongEngine ${SOURCES})
 
-# Link libraries (platform-specific)
 if(WIN32)
     target_link_libraries(PingPongEngine ${SDL2MAIN_LIBRARY} ${SDL2_LIBRARY} ${SDL2_TTF_LIBRARY})
     
-    # Copy SDL2.dll to output directory on Windows
     if(EXISTS "${SDL2_DIR}/lib/x64/SDL2.dll")
         add_custom_command(TARGET PingPongEngine POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -398,7 +328,6 @@ if(WIN32)
         )
     endif()
     
-    # Copy SDL2_ttf.dll to output directory on Windows
     if(EXISTS "${SDL2_TTF_DIR}/lib/x64/SDL2_ttf.dll")
         add_custom_command(TARGET PingPongEngine POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -406,19 +335,24 @@ if(WIN32)
             $<TARGET_FILE_DIR:PingPongEngine>
         )
     endif()
-else()
+elseif(APPLE)
     target_link_libraries(PingPongEngine ${SDL2_LIBRARY} ${SDL2_TTF_LIBRARY})
+    
+    if(EXISTS "${CMAKE_SOURCE_DIR}/SDL2/SDL2.framework")
+        set_target_properties(PingPongEngine PROPERTIES
+            BUILD_RPATH "${CMAKE_SOURCE_DIR}/SDL2;${CMAKE_SOURCE_DIR}/SDL2_ttf"
+            INSTALL_RPATH "@executable_path/../Frameworks"
+        )
+    endif()
 endif()
 
-# Custom run target
 add_custom_target(run
     COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/PingPongEngine
     DEPENDS PingPongEngine
     WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
-# Copy entire assets folder to build dir
-add_custom_command(TARGET PingPongEngine POST_BUILD  # ← Use target name here
+add_custom_command(TARGET PingPongEngine POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/assets 
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets
