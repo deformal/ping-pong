@@ -255,7 +255,9 @@ int main(int argc, char **args)
 		SDL_SetRenderDrawColor(ren, 100, 100, 100, 255);
 		for (int i = 0; i < 720; i += 20)
 			SDL_RenderDrawLine(ren, 640, i, 640, i + 10);
-
+		SDL_DestroyTexture(leftScore.texture);
+		SDL_DestroyTexture(rightScore.texture);
+		SDL_DestroyTexture(gameOver.texture);
 		SDL_RenderPresent(ren);
 	}
 
