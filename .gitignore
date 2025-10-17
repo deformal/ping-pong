@@ -54,6 +54,10 @@ Testing/
 Makefile
 
 SDL2
+SDL2_ttf
 out
+Debug
+PingPongEngine.dir
 .vs
+.vscode
 # End of the list
